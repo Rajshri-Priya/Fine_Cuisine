@@ -40,13 +40,20 @@ class UserLoginSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=150)
     password = serializers.CharField(max_length=128, write_only=True)
 
-    def validate(self, attrs):
-        username = attrs.get('username')
-        password = attrs.get('password')
-
-        user = authenticate(username=username, password=password)
-        if not user or not user.is_active:
-            raise serializers.ValidationError('Invalid username or password.')
-
-        attrs['user'] = user
-        return attrs
+    def create(self, validated_data):
+        user = authenticate(username=validated_data['username'], password=validated_data['password'])
+        # is_active is property
+        if not user:
+            raise serializers.ValidationError("Incorrect Credentials")
+        self.context.update({'user': user})
+        return user
+    # def validate(self, attrs):
+    #     username = attrs.get('username')
+    #     password = attrs.get('password')
+    #
+    #     user = authenticate(username=username, password=password)
+    #     if not user or not user.is_active:
+    #         raise serializers.ValidationError('Invalid username or password.')
+    #
+    #     attrs['user'] = user
+    #     return attrs
